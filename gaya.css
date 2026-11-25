@@ -1,0 +1,17 @@
+body { font-family: Arial, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #1f2937; }
+h1 { margin-bottom: 4px; }
+.sub { color: #6b7280; margin-top: 0; }
+table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+th, td { border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+th { background: #f3f4f6; }
+a.tombol, button { display: inline-block; padding: 6px 12px; border: 1px solid #0f766e; background: #0f766e; color: #fff; border-radius: 4px; text-decoration: none; cursor: pointer; font-size: 14px; }
+a.tombol.sekunder, button.sekunder { background: #fff; color: #0f766e; }
+button.bahaya { background: #b91c1c; border-color: #b91c1c; }
+form.inline { display: inline; }
+label { display: block; margin-top: 12px; font-weight: bold; }
+input, select { padding: 6px; width: 100%; max-width: 400px; box-sizing: border-box; }
+.pesan { padding: 10px; border-radius: 4px; margin: 12px 0; background: #ecfdf5; border: 1px solid #10b981; }
+.galat { padding: 10px; border-radius: 4px; margin: 12px 0; background: #fef2f2; border: 1px solid #ef4444; }
+.cari input { width: auto; }
+code, pre { background: #f3f4f6; padding: 2px 4px; border-radius: 3px; }
+pre { padding: 10px; overflow-x: auto; }

@@ -1,0 +1,1034 @@
+{
+  "info": {
+    "_postman_id": "537e6482-3437-425f-908e-f9388bcfef34",
+    "name": "API Data Mahasiswa",
+    "description": "Koleksi uji untuk proyek CRUD Data Mahasiswa.\n\nUrutan: jalankan folder 1 (Login) dulu, karena token disimpan otomatis ke variabel. Folder 2 berisi alur positif, folder 3 berisi pengujian negatif dan keamanan.\n\nUbah variabel {{url}} bila alamat API Anda berbeda.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "60408446",
+    "_collection_link": "https://go.postman.co/collection/60408446-537e6482-3437-425f-908e-f9388bcfef34?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1. Login",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Ada token di body\", function () {",
+                  "    var isi = pm.response.json();",
+                  "    pm.expect(isi.token).to.have.lengthOf(64);",
+                  "    pm.collectionVariables.set(\"token_admin\", isi.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/login",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login operator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"token_operator\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"operator\",\n  \"password\": \"operator123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/login",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login password salah (negatif)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"salah\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/login",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Mahasiswa (alur positif)",
+      "item": [
+        {
+          "name": "Daftar mahasiswa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Body berisi jumlah dan data\", function () {",
+                  "    var isi = pm.response.json();",
+                  "    pm.expect(isi.data).to.be.an(\"array\");",
+                  "    pm.expect(isi.jumlah).to.eql(isi.data.length);",
+                  "});",
+                  "pm.test(\"Respons di bawah 500 ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cari mahasiswa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa?cari=siregar",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ],
+              "query": [
+                {
+                  "key": "cari",
+                  "value": "siregar"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detail mahasiswa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"NIM sesuai\", function () {",
+                  "    pm.expect(pm.response.json().data.nim).to.eql(\"2205101001\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa/2205101001",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "2205101001"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tambah mahasiswa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Header Location ada\", function () {",
+                  "    pm.response.to.have.header(\"Location\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"2405101099\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": 2024,\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cek data tersimpan (GET)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Nama tersimpan\", function () {",
+                  "    pm.expect(pm.response.json().data.nama).to.eql(\"Rina Sitompul\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa/2405101099",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "2405101099"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ubah mahasiswa (operator)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Prodi berubah\", function () {",
+                  "    pm.expect(pm.response.json().data.prodi).to.eql(\"Teknik Informatika\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_operator}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Rina Sitompul Diubah\",\n  \"prodi\": \"Teknik Informatika\",\n  \"angkatan\": 2024,\n  \"email\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa/2405101099",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "2405101099"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Pengujian negatif & keamanan",
+      "item": [
+        {
+          "name": "Tambah tanpa token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"2405101098\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": 2024,\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tambah token palsu → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_palsu}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"2405101098\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": 2024,\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "NIM duplikat → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"2405101099\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": 2024,\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "BVA angkatan 2017 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Pesan menyebut angkatan\", function () {",
+                  "    pm.expect(pm.response.json().detail).to.have.property(\"angkatan\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"2405101098\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": 2017,\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ECP angkatan bukan angka → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"2405101098\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": \"20x4\",\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "NIM 9 digit → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"240510109\",\n  \"nama\": \"Rina Sitompul\",\n  \"prodi\": \"Teknik Komputer\",\n  \"angkatan\": 2024,\n  \"email\": \"rina@students.polmed.ac.id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSON rusak → 400 (bukan 500)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Tidak membocorkan detail server\", function () {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"PDO\");",
+                  "    pm.expect(pm.response.text()).to.not.include(\".php\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nim\": \"2405101098\", \"nama\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detail NIM tidak ada → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa/9999999999",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "9999999999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hapus oleh operator → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_operator}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa/2405101099",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "2405101099"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Method salah: DELETE koleksi → 405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 405\", function () {",
+                  "    pm.response.to.have.status(405);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Bersih-bersih",
+      "item": [
+        {
+          "name": "Hapus oleh admin → 204",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa/2405101099",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "2405101099"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cek sudah terhapus (GET) → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/mahasiswa/2405101099",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "mahasiswa",
+                "2405101099"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "url",
+      "value": "http://localhost/crud-mahasiswa/api"
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_operator",
+      "value": ""
+    },
+    {
+      "key": "token_palsu",
+      "value": "tokenpalsu123"
+    }
+  ]
+}

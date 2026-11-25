@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Mahasiswa (Klien API)</title>
+    <link rel="stylesheet" href="gaya.css">
+    <style>
+        .panel-auth { background: #f4f6f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ddd; }
+        .baris-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+        .baris-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .pesan { padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; }
+        .pesan.sukses { background: #d4edda; color: #155724; display: block; }
+        .pesan.error { background: #f8d7da; color: #721c24; display: block; }
+    </style>
+</head>
+<body>
+    <div class="wadah">
+        <h1>Data Mahasiswa (Klien API)</h1>
+        <p><a class="tombol sekunder" href="index.php">&larr; Kembali ke Versi PHP Biasa</a></p>
+
+        <div id="kotak-pesan" class="pesan"></div>
+
+        <!-- Panel Login / Logout -->
+        <div class="panel-auth">
+            <div id="form-login" class="baris-form">
+                <strong>Login API:</strong>
+                <input type="text" id="username" placeholder="Username (admin / operator)" value="admin">
+                <input type="password" id="password" placeholder="Password" value="admin123">
+                <button class="tombol" onclick="login()">Login</button>
+            </div>
+            <div id="info-login" style="display: none;">
+                Login sebagai: <strong id="label-user"></strong> (<span id="label-peran"></span>)
+                <button class="tombol hapus" onclick="logout()" style="margin-left: 10px;">Logout</button>
+            </div>
+        </div>
+
+        <!-- Form Tambah / Ubah Mahasiswa -->
+        <div class="panel-auth">
+            <h3 id="judul-form" style="margin-top: 0;">Tambah Mahasiswa</h3>
+            <div class="baris-form">
+                <input type="text" id="nim" placeholder="NIM (10 digit)" maxlength="10">
+                <input type="text" id="nama" placeholder="Nama Lengkap">
+                <input type="text" id="prodi" placeholder="Program Studi">
+                <input type="number" id="angkatan" placeholder="Angkatan (2018-2026)">
+                <input type="email" id="email" placeholder="Email">
+            </div>
+            <button class="tombol" id="btn-simpan" onclick="simpanData()">Simpan</button>
+            <button class="tombol sekunder" id="btn-batal" onclick="resetForm()" style="display: none;">Batal Edit</button>
+        </div>
+
+        <!-- Pencarian & Tabel Data -->
+        <div class="baris-form">
+            <input type="text" id="cari" placeholder="Cari nama atau NIM..." onkeyup="muatData()">
+            <button class="tombol sekunder" onclick="muatData()">Segarkan</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>NIM</th>
+                    <th>Nama</th>
+                    <th>Prodi</th>
+                    <th>Angkatan</th>
+                    <th>Email</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-mahasiswa">
+                <tr><td colspan="6">Memuat data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'api';
+        let modeEdit = false;
+
+        function tampilPesan(teks, tipe = 'sukses') {
+            const box = document.getElementById('kotak-pesan');
+            box.textContent = teks;
+            box.className = 'pesan ' + tipe;
+            setTimeout(() => { box.className = 'pesan'; }, 4000);
+        }
+
+        function perbaruiTampilanAuth() {
+            const token = localStorage.getItem('token_api');
+            const user = localStorage.getItem('user_api');
+            const peran = localStorage.getItem('peran_api');
+            if (token) {
+                document.getElementById('form-login').style.display = 'none';
+                document.getElementById('info-login').style.display = 'block';
+                document.getElementById('label-user').textContent = user;
+                document.getElementById('label-peran').textContent = peran;
+            } else {
+                document.getElementById('form-login').style.display = 'flex';
+                document.getElementById('info-login').style.display = 'none';
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const teks = await res.text();
+                let json;
+                try {
+                    json = JSON.parse(teks);
+                } catch {
+                    return tampilPesan('Respon server bukan JSON: ' + teks.substring(0, 100), 'error');
+                }
+                if (!res.ok) return tampilPesan(json.error || json.pesan || 'Login gagal', 'error');
+
+                const userObj = json.pengguna || json.user || json.data || {};
+                localStorage.setItem('token_api', json.token);
+                localStorage.setItem('user_api', userObj.username || username);
+                localStorage.setItem('peran_api', userObj.peran || userObj.role || 'user');
+                perbaruiTampilanAuth();
+                tampilPesan('Login berhasil!');
+            } catch (e) {
+                tampilPesan('Error: ' + e.message, 'error');
+            }
+        }
+
+        async function logout() {
+            const token = localStorage.getItem('token_api');
+            if (token) {
+                await fetch(`${API_URL}/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+            }
+            localStorage.removeItem('token_api');
+            localStorage.removeItem('user_api');
+            localStorage.removeItem('peran_api');
+            perbaruiTampilanAuth();
+            tampilPesan('Berhasil logout.');
+        }
+
+        async function muatData() {
+            const cari = document.getElementById('cari').value;
+            const url = cari ? `${API_URL}/mahasiswa?cari=${encodeURIComponent(cari)}` : `${API_URL}/mahasiswa`;
+            try {
+                const res = await fetch(url);
+                const json = await res.json();
+                const tbody = document.getElementById('tabel-mahasiswa');
+                tbody.innerHTML = '';
+
+                if (!json.data || json.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">Data tidak ditemukan.</td></tr>';
+                    return;
+                }
+
+                json.data.forEach(m => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${m.nim}</td>
+                            <td>${m.nama}</td>
+                            <td>${m.prodi}</td>
+                            <td>${m.angkatan}</td>
+                            <td>${m.email || '-'}</td>
+                            <td>
+                                <button class="tombol" onclick='isiEdit(${JSON.stringify(m)})'>Edit</button>
+                                <button class="tombol hapus" onclick="hapusData('${m.nim}')">Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                tampilPesan('Gagal memuat data mahasiswa.', 'error');
+            }
+        }
+
+        function isiEdit(m) {
+            modeEdit = true;
+            document.getElementById('judul-form').textContent = 'Ubah Data Mahasiswa';
+            document.getElementById('nim').value = m.nim;
+            document.getElementById('nim').disabled = true;
+            document.getElementById('nama').value = m.nama;
+            document.getElementById('prodi').value = m.prodi;
+            document.getElementById('angkatan').value = m.angkatan;
+            document.getElementById('email').value = m.email || '';
+            document.getElementById('btn-simpan').textContent = 'Perbarui';
+            document.getElementById('btn-batal').style.display = 'inline-block';
+        }
+
+        function resetForm() {
+            modeEdit = false;
+            document.getElementById('judul-form').textContent = 'Tambah Mahasiswa';
+            document.getElementById('nim').value = '';
+            document.getElementById('nim').disabled = false;
+            document.getElementById('nama').value = '';
+            document.getElementById('prodi').value = '';
+            document.getElementById('angkatan').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('btn-simpan').textContent = 'Simpan';
+            document.getElementById('btn-batal').style.display = 'none';
+        }
+
+        async function simpanData() {
+            const token = localStorage.getItem('token_api');
+            if (!token) return tampilPesan('Silakan login terlebih dahulu!', 'error');
+
+            const nim = document.getElementById('nim').value.trim();
+            const payload = {
+                nama: document.getElementById('nama').value.trim(),
+                prodi: document.getElementById('prodi').value.trim(),
+                angkatan: parseInt(document.getElementById('angkatan').value),
+                email: document.getElementById('email').value.trim()
+            };
+
+            let url = `${API_URL}/mahasiswa`;
+            let method = 'POST';
+            if (modeEdit) {
+                url = `${API_URL}/mahasiswa/${nim}`;
+                method = 'PUT';
+            } else {
+                payload.nim = nim;
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (!res.ok) return tampilPesan(json.error || 'Gagal menyimpan data.', 'error');
+
+                tampilPesan(modeEdit ? 'Data berhasil diperbarui!' : 'Mahasiswa berhasil ditambahkan!');
+                resetForm();
+                muatData();
+            } catch (e) {
+                tampilPesan('Terjadi kesalahan jaringan.', 'error');
+            }
+        }
+
+        async function hapusData(nim) {
+            const token = localStorage.getItem('token_api');
+            if (!token) return tampilPesan('Silakan login sebagai admin terlebih dahulu!', 'error');
+            if (!confirm(`Yakin ingin menghapus mahasiswa dengan NIM ${nim}?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/mahasiswa/${nim}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.status === 204) {
+                    tampilPesan('Data mahasiswa berhasil dihapus.');
+                    muatData();
+                } else {
+                    const json = await res.json();
+                    tampilPesan(json.error || 'Gagal menghapus data.', 'error');
+                }
+            } catch (e) {
+                tampilPesan('Terjadi kesalahan jaringan.', 'error');
+            }
+        }
+
+        perbaruiTampilanAuth();
+        muatData();
+    </script>
+</body>
+</html>
